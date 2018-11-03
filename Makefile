@@ -51,7 +51,7 @@ LIBC_OBJECTS = lib/string.o lib/mini-printf.o lib/console.o \
 	       lib/stdlib.o lib/stdio.o lib/math.o lib/ctype.o \
 	       lib/atof.o lib/strtol.o lib/strtoul.o lib/strtoull.o
 
-UTIL_OBJECTS = util/vfs.o util/sym_table.o
+UTIL_OBJECTS = util/vfs.o util/sym_table.o util/readline_buf.o
 
 ###
 
