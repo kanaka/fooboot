@@ -97,7 +97,7 @@ clean::
 #   2. symbol table with symbol names to get final address layout
 #   3. symbol table with symbol names and final symbol addresses
 define make-bin-target
-$1: $$(BASE_DEPS) $1.mem_fs_files.o
+$1: $$(BASE_DEPS) $1.mem_fs_files.o $1.o
 	cat /dev/null > $$@
 	for i in 1 2 3; do \
 	  $$(FOOBOOT_TOP)/gen_syms.sh $$@ > $1.syms.c; \
