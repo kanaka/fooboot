@@ -5,6 +5,8 @@
    painful.  These macros should at least be more portable than hardwired hex
    constants. */
 
+#define CHAR_BIT   8
+
 #ifndef ULONG_MAX
 #define	ULONG_MAX	((unsigned long)(~0L))		/* 0xFFFFFFFF */
 #endif
