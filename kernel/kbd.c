@@ -12,6 +12,11 @@ int kbd_received() {
     return inb(KBD_STATUS_REGISTER) & 0x1;
 }
 
+char kbd_getc() {
+    while (!kbd_received());
+    return inb(KBD_DATA_PORT);
+}
+
 int shift_L = 0;
 int shift_R = 0;
 int ctrl_L  = 0;
@@ -45,8 +50,8 @@ void kbd_translate_scan_code(key_event_t *ke) {
 }
 
 void kbd_read_key_event(key_event_t *ke) {
-    while (!kbd_received());
-    ke->code = inb(KBD_DATA_PORT);
+    ke->code = kbd_getc();
+    ke->escaped = 0;
 
     switch (ke->code) {
         case 0x2a: shift_L = 1; break;
@@ -58,6 +63,8 @@ void kbd_read_key_event(key_event_t *ke) {
         case 0xe0: ke->escaped = 1; break;
         default: break;
     }
+    ke->shift = shift_L || shift_R;
+    ke->ctrl = ctrl_L || ctrl_R;
     ke->down = ke->code & 0x80 ? 0 : 1;
     kbd_translate_scan_code(ke);
     return;
@@ -65,7 +72,7 @@ void kbd_read_key_event(key_event_t *ke) {
 
 //#include <console.h>
 // Returns 0 for key down events and for other non-translatable key up events
-uint8_t kbd_getc() {
+uint8_t kbd_get_key() {
     key_event_t ke = {0};
     kbd_read_key_event(&ke);
     //console_printf("here1 code: 0x%x, key: 0x%x, down: %d\n", ke.code, ke.key, ke.down);
