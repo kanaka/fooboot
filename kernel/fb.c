@@ -27,12 +27,12 @@ void fb_set_color(uint8_t foreground, uint8_t background) {
 }
 
 // Write single character at xy
-void fb_put_xy(char c, uint8_t x, uint8_t y) {
+void fb_put_xy(unsigned char c, uint8_t x, uint8_t y) {
     fb[y*80 + x] = (fb_color << 8) + c;
 }
 
 // Write single character at current position
-void fb_put(char c) {
+void fb_put(unsigned char c) {
     fb_put_xy(c, fb_cursor_x, fb_cursor_y);
 }
 
@@ -56,7 +56,7 @@ void fb_scroll() {
 }
 
 // Write single charatcter at current position advancing the current position
-void fb_putc(char c) {
+void fb_putc(unsigned char c) {
     if (c == '\n') {
         fb_cursor_x = 0;
         fb_cursor_y += 1;
