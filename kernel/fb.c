@@ -71,6 +71,7 @@ void fb_putc(char c) {
     // Wrap
     if (fb_cursor_x > 79) {
         fb_cursor_y += 1;
+        fb_cursor_x = 0;
     }
     // Scroll
     if (fb_cursor_y > 24) {
