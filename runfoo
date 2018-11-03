@@ -1,0 +1,62 @@
+#!/bin/bash
+
+die() { echo "$*"; exit 1; }
+
+QEMU_BIN=${QEMU_BIN:-qemu-system-i386}
+DISPLAY_OPTS=${DISPLAY_OPTS:--nographic}
+DISABLE_KVM=${DISABLE_KVM:-}
+
+[ "${1}" ] || die "Usage: $0 PROG [ARG...]"
+
+case ${FOO_MODE:-qemu} in
+    qemu)
+        (
+            sleep 0.1
+            tries=0
+            while ! exec 3<> /dev/tcp/localhost/21118; do
+                sleep 0.5
+                tries=$(( tries + 1 ))
+                [ "${tries}" -gt 10 ] && die "Could not connect to qemu"
+            done
+            while read -u 3 -r cmd arg1; do
+                case ${cmd} in
+                read:)
+                    if [ -r "${arg1}" ]; then
+                        echo "fdata: $(stat --printf="%s" ${arg1})" >&3
+                        cat >&3 ${arg1}
+                    else
+                        echo "error: Could not read file ${arg1}" >&3
+                    fi
+                    ;;
+                size:)
+                    if [ -r "${arg1}" ]; then
+                        echo "fdata: $(stat --printf="%s" ${arg1})" >&3
+                    else
+                        echo "error: Could not stat file ${arg1}" >&3
+                    fi
+                    ;;
+                *)
+                    echo >&2 "Unknown socket command: $cmd"
+                    ;;
+                esac
+            done
+        ) &
+        bin=$1; shift
+        opts="${DISPLAY_OPTS}"
+        [ "${DISABLE_KVM}" ] || opts="${opts} --enable-kvm"
+        [ "${GDB}" ] && opts="${opts} -s -S"
+        set -x
+        ${QEMU_BIN} \
+            ${opts} \
+            -monitor none \
+            -serial stdio \
+            -serial tcp:localhost:21118,server \
+            -device isa-debug-exit,iobase=0xf4,iosize=0x04 \
+            -kernel ${bin} \
+            ${@:+-append "${*}"}
+        exit $(( $? / 2 ))
+        ;;
+    *)
+        $1 "${@}"
+        ;;
+esac
