@@ -8,7 +8,7 @@ FOO_CMDLINE ?=
 
 # Files to include in
 # Syntax "name1:path1 name2:path2 ..."
-MEM_FS_FILES ?= $(shell cat mem_fs_files || true)
+MEM_FS_FILES ?= $(shell cat mem_fs_files 2>/dev/null|| true)
 
 # 64 bits is not supported yet
 ABI_BITS = 32
@@ -55,6 +55,8 @@ UTIL_OBJECTS = util/vfs.o util/sym_table.o util/readline_buf.o
 
 ###
 
+$(shell mkdir -p kernel lib util)
+
 .PHONY: foo
 foo: $(FOO_TARGETS)
 
@@ -67,10 +69,6 @@ libc.a: $(LIBC_OBJECTS)
 libutil.a: $(UTIL_OBJECTS)
 	$(AR) rcs $@ $^
 
-###
-
-$(shell mkdir -p kernel lib util)
-
 %: %.c  # cancel implicit rule
 
 %.o: %.c
@@ -80,10 +78,12 @@ $(shell mkdir -p kernel lib util)
 	$(FOO_AS) $(filter %.s,$^) -o $@
 
 clean::
-	rm -f *.d *.o *.a *.bin *.iso
-	rm -f kernel/*.d kernel/*.o lib/*.d lib/*.o
+	rm -f *.d *.o *.a *.bin *.iso $(FOO_TARGETS)
+	rm -f examples/*.d examples/*.o examples/*.iso
+	rm -f kernel/*.d kernel/*.o lib/*.d lib/*.o util/*.d util/*.o
 	rm -f *.syms.c *.mem_fs_files.s
-	rmdir kernel lib 2>/dev/null || true
+	rm -f examples/*.syms.c examples/*.mem_fs_files.s
+	rmdir kernel lib util 2>/dev/null || true
 	rm -f isodir/boot/grub/grub.cfg
 	rmdir isodir/boot/grub 2>/dev/null || true
 	rm -f isodir/boot/*
@@ -106,6 +106,7 @@ $1: $$(BASE_DEPS) $1.mem_fs_files.o
 	done
 endef
 $(foreach b,$(FOO_TARGETS),$(eval $(call make-bin-target,$(b))))
+
 
 ################################################################################
 # embedded file-system
