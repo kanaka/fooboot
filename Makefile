@@ -8,7 +8,7 @@ FOO_CMDLINE ?=
 
 # Files to include in
 # Syntax "name1:path1 name2:path2 ..."
-MEM_FS_FILES ?= $(shell cat mem_fs_files 2>/dev/null|| true)
+MEM_FS_FILES ?= $(shell grep -v '^\#' mem_fs_files 2>/dev/null|| true)
 
 # 64 bits is not supported yet
 ABI_BITS = 32
